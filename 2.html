@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Enchanted Door</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --crimson-dark: #2a030a;
+  --crimson-deep: #4a0512;
+  --crimson-mid: #8b0000;
+  --crimson-bright: #dc143c;
+  --rose-glow: #ff2a55;
+  --gold-dark: #5c4308;
+  --gold-antique: #a37c27;
+  --gold-light: #e6c675;
+  --dark-void: #050203;
+  --moon-light: #d8e6ff;
+  --leaf-dark: #122114;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Quicksand', sans-serif;
+  background: var(--dark-void);
+  color: #e0d0d0;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+h1, h2, h3, .serif { font-family: 'Cinzel', serif; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--dark-void); }
+::-webkit-scrollbar-thumb { background: var(--crimson-deep); border: 1px solid var(--gold-dark); border-radius: 4px; }
+
+/* ================= ENTRY & DOOR TRACK ================= */
+#entry-track {
+  position: relative;
+  height: 350vh;
+  background: #020102;
+}
+
+#entry-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #150308 0%, #030104 80%, #000000 100%);
+}
+
+/* Aged Dark Stone Arch */
+.stone-arch {
+  position: relative;
+  width: min(78vw, 480px);
+  aspect-ratio: 2/3;
+  border-radius: 240px 240px 12px 12px / 280px 280px 12px 12px;
+  background: radial-gradient(circle at 40% 30%, #1c1518 0%, #0d0a0b 60%, #050405 100%);
+  box-shadow: 
+    0 0 0 16px #080607,
+    0 0 0 18px #020102,
+    0 0 80px 30px rgba(0,0,0,0.95),
+    inset 0 0 50px rgba(0,0,0,0.9);
+  padding: 16px;
+  perspective: 1400px;
+}
+
+.door-leaves {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 230px 230px 6px 6px / 270px 270px 6px 6px;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  box-shadow: inset 0 0 30px #000;
+}
+
+/* Antique & Mysterious Weathered Door Leaves */
+.door-leaf {
+  width: 50%;
+  height: 100%;
+  position: relative;
+  background: 
+    linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.8) 100%),
+    repeating-linear-gradient(90deg, #1c0a10 0 4px, #260d15 4px 8px, #18080e 8px 12px),
+    linear-gradient(180deg, #2b0e17 0%, #15060a 60%, #0a0204 100%);
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
+  will-change: transform;
+}
+
+.door-leaf.right { transform-origin: right center; }
+
+.door-leaf .panel-line {
+  position: absolute;
+  border: 2px solid rgba(163, 124, 39, 0.15);
+  border-radius: 4px;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.03);
+}
+.door-leaf .p1 { top: 6%; left: 10%; right: 10%; height: 40%; }
+.door-leaf .p2 { bottom: 6%; left: 10%; right: 10%; height: 44%; }
+
+.door-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 60px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #4a3813, #8a6820 50%, #291e0a);
+  box-shadow: 0 0 8px rgba(0,0,0,0.9), inset 0 0 2px rgba(232, 198, 117, 0.4);
+}
+.door-leaf.left .door-handle { right: 10px; transform: translateY(-50%); }
+.door-leaf.right .door-handle { left: 10px; transform: translateY(-50%); }
+
+.door-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(139, 0, 0, 0) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Dark Glowing Smoke Container */
+#smoke-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+  mix-blend-mode: screen;
+}
+
+.smoke-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(139, 0, 0, 0.4) 0%, rgba(42, 3, 10, 0.2) 50%, transparent 70%);
+  filter: blur(20px);
+  will-change: transform, opacity;
+}
+
+.scroll-cue {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--gold-antique);
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.6;
+  z-index: 10;
+}
+.scroll-cue .chev {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--gold-antique);
+  border-bottom: 2px solid var(--gold-antique);
+  transform: rotate(45deg);
+  animation: bob 1.8s ease-in-out infinite;
+}
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(45deg); } 50% { transform: translateY(6px) rotate(45deg); } }
+
+/* Tunnel Effect */
+#tunnel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 900px;
+  opacity: 0;
+}
+.ring {
+  position: absolute;
+  border: 2px solid var(--crimson-deep);
+  border-radius: 120px 120px 12px 12px;
+  box-shadow: 0 0 25px 2px rgba(139, 0, 0, 0.25), inset 0 0 15px rgba(139, 0, 0, 0.2);
+  will-change: transform, opacity;
+}
+
+/* ================= ENCHANTED ROSE & MOONLIGHT REVEAL ================= */
+#rose-reveal {
+  min-height: 100vh;
+  background: #030104;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 4rem 1.5rem;
+}
+
+/* Realistic Moonlight Environment */
+.moonlight-beam {
+  position: absolute;
+  top: -10%;
+  left: 50%;
+  transform: translateX(-50%) rotate(-10deg);
+  width: min(90vw, 600px);
+  height: 120%;
+  background: linear-gradient(180deg, rgba(216, 230, 255, 0.18) 0%, rgba(180, 205, 255, 0.05) 50%, transparent 100%);
+  filter: blur(25px);
+  pointer-events: none;
+}
+
+.moon-reflection {
+  position: absolute;
+  top: 5%;
+  right: 15%;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 235, 255, 0.9) 0%, rgba(200, 220, 255, 0.2) 45%, transparent 70%);
+  filter: blur(8px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Glass Bell Jar (Beauty & The Beast style) */
+.glass-jar {
+  position: relative;
+  padding: 40px 30px 20px;
+  border-radius: 150px 150px 20px 20px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 60%, rgba(216,230,255,0.03) 100%);
+  border: 1px solid rgba(216, 230, 255, 0.2);
+  border-top: 2px solid rgba(216, 230, 255, 0.4);
+  box-shadow: 
+    0 20px 50px rgba(0,0,0,0.9),
+    inset 0 0 30px rgba(216, 230, 255, 0.05),
+    inset 10px 0 15px rgba(255,255,255,0.08);
+  backdrop-filter: blur(2px);
+}
+
+.glass-jar::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110%;
+  height: 16px;
+  background: linear-gradient(180deg, #1f1508, #0a0602);
+  border: 1px solid var(--gold-dark);
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+}
+
+#hero-rose-svg {
+  width: min(60vw, 260px);
+  filter: drop-shadow(0 0 25px rgba(220, 20, 60, 0.6));
+}
+
+.reveal-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.reveal-inner h2 {
+  color: var(--crimson-bright);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 2.5rem;
+  text-shadow: 0 0 15px rgba(220, 20, 60, 0.5);
+}
+
+.reveal-inner .msg {
+  color: #c2b0b5;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+/* ================= SECTION HEADINGS ================= */
+.section-head {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 4rem;
+}
+.section-head span.eyebrow {
+  color: var(--gold-antique);
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.section-head h2 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  color: #e6d0d5;
+  margin-top: 0.5rem;
+  text-shadow: 0 0 10px rgba(139, 0, 0, 0.4);
+}
+
+/* ================= BEAUTY / QUALITIES SECTION ================= */
+#beauty {
+  background: linear-gradient(180deg, #030104 0%, #0d0307 50%, #030104 100%);
+  padding: 6rem 1.5rem;
+  position: relative;
+}
+
+.trait-row {
+  display: flex;
+  gap: 3rem;
+  align-items: center;
+  max-width: 860px;
+  margin: 0 auto 4.5rem;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.trait-row.visible { opacity: 1; transform: none; }
+.trait-row:nth-child(even) { flex-direction: row-reverse; text-align: right; }
+
+.trait-row .arch-badge {
+  flex: 0 0 auto;
+  width: 100px;
+  height: 130px;
+  position: relative;
+  background: linear-gradient(160deg, #1c050c, #080104);
+  border-radius: 50px 50px 6px 6px;
+  border: 1px solid var(--gold-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(139, 0, 0, 0.2);
+}
+
+.trait-row .trait-text h3 {
+  font-size: 1.4rem;
+  color: var(--gold-light);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+.trait-row .trait-text p {
+  margin-top: 0.6rem;
+  color: #b39b9f;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+/* ================= PROGRESSIVE GAMES SECTION ================= */
+#games-intro {
+  background: #030104;
+  padding: 5rem 1.5rem 2rem;
+  text-align: center;
+}
+
+.btn-main {
+  background: linear-gradient(180deg, var(--crimson-mid), var(--crimson-deep));
+  color: var(--gold-light);
+  border: 1px solid var(--gold-antique);
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  padding: 0.9rem 2.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 5px 20px rgba(139, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+.btn-main:hover {
+  background: linear-gradient(180deg, var(--crimson-bright), var(--crimson-mid));
+  box-shadow: 0 0 25px rgba(220, 20, 60, 0.6);
+  color: #fff;
+}
+
+#games {
+  background: #030104;
+  padding: 2rem 1.25rem 6rem;
+  position: relative;
+}
+
+.game-level {
+  max-width: 640px;
+  margin: 0 auto 4rem;
+  opacity: 0.3;
+  pointer-events: none;
+  filter: blur(2px);
+  transition: all 0.8s ease;
+}
+.game-level.unlocked {
+  opacity: 1;
+  pointer-events: auto;
+  filter: none;
+}
+
+.game-card {
+  background: linear-gradient(180deg, #0d0307 0%, #050103 100%);
+  border: 1px solid var(--gold-dark);
+  padding: 2.2rem 1.75rem;
+  position: relative;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+}
+.game-card h3 {
+  color: var(--gold-light);
+  font-size: 1.3rem;
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+.game-card .game-sub {
+  text-align: center;
+  color: #8c7378;
+  font-size: 0.85rem;
+  margin: 0.4rem 0 1.8rem;
+}
+
+.level-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #030104;
+  border: 1px solid var(--gold-antique);
+  color: var(--gold-antique);
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  padding: 2px 12px;
+  letter-spacing: 0.1em;
+}
+
+/* Petal Game */
+#petalGameStage { display: flex; flex-direction: column; align-items: center; gap: 1.2rem; }
+#petalFlower { width: 160px; height: 200px; cursor: pointer; filter: drop-shadow(0 0 12px rgba(220, 20, 60, 0.3)); }
+#petalGameStage .petal-msg {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--crimson-bright);
+  min-height: 2rem;
+  text-align: center;
+}
+.btn-reset {
+  border: 1px solid var(--gold-dark);
+  background: transparent;
+  color: var(--gold-antique);
+  font-family: 'Quicksand';
+  font-size: 0.8rem;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-reset:hover { border-color: var(--gold-antique); color: var(--gold-light); }
+
+/* Memory Match */
+#memoryGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; max-width: 400px; margin: 0 auto; }
+.mem-card { aspect-ratio: 3/4; border-radius: 4px; position: relative; cursor: pointer; perspective: 600px; }
+.mem-card .mc-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
+.mem-card.flipped .mc-inner, .mem-card.matched .mc-inner { transform: rotateY(180deg); }
+.mem-card .mc-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.mem-card .mc-back { background: linear-gradient(135deg, #2a0510, #0a0104); border: 1px solid var(--gold-dark); }
+.mem-card .mc-front { background: #120408; transform: rotateY(180deg); border: 1px solid var(--gold-antique); }
+.mem-card.matched { opacity: 0.4; }
+#memoryMeta { text-align: center; margin-top: 1.2rem; color: #8c7378; font-size: 0.85rem; }
+
+/* Catch Game */
+#catchStage {
+  position: relative;
+  height: 320px;
+  background: radial-gradient(circle at center, #140409 0%, #050103 100%);
+  border: 1px solid var(--gold-dark);
+  overflow: hidden;
+}
+#catchStage .fall-petal { position: absolute; top: -30px; width: 24px; height: 32px; cursor: pointer; }
+#catchHud { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.85rem; color: var(--gold-light); }
+#catchOverlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+  background: rgba(5, 1, 3, 0.85); text-align: center;
+}
+
+/* Unlock Banner */
+.unlock-banner {
+  text-align: center;
+  padding: 1rem;
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  display: none;
+  animation: fadeIn 1s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ================= FINALE ================= */
+#finale {
+  min-height: 80vh;
+  background: linear-gradient(180deg, #030104 0%, #120308 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 5rem 1.5rem;
+  opacity: 0.3;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+#finale.unlocked { opacity: 1; pointer-events: auto; }
+#finale h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); color: var(--gold-light); }
+#finale p { margin-top: 1rem; color: #b39b9f; line-height: 1.7; max-width: 500px; }
+.ask-buttons { position: relative; height: 80px; margin-top: 2rem; display: flex; justify-content: center; gap: 1.5rem; }
+
+footer {
+  background: #020102;
+  color: var(--gold-dark);
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.8rem;
+  border-top: 1px solid #120509;
+}
+
+@media(max-width: 640px) {
+  .trait-row, .trait-row:nth-child(even) { flex-direction: column; text-align: center; }
+  #memoryGrid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ ENTRY DOOR TRACK ============ -->
+<section id="entry-track">
+  <div id="entry-stage">
+    
+    <div class="stone-arch" id="stoneArch">
+      <div class="door-leaves">
+        <div class="door-leaf left" id="leafLeft">
+          <div class="panel-line p1"></div>
+          <div class="panel-line p2"></div>
+          <div class="door-handle"></div>
+        </div>
+        <div class="door-leaf right" id="leafRight">
+          <div class="panel-line p1"></div>
+          <div class="panel-line p2"></div>
+          <div class="door-handle"></div>
+        </div>
+      </div>
+      <div class="door-glow" id="doorGlow"></div>
+    </div>
+
+    <!-- Glowing Dark Smoke Layer -->
+    <div id="smoke-container"></div>
+
+    <div id="tunnel"></div>
+
+    <div class="scroll-cue" id="scrollCue">
+      <span>SCROLL TO ENTER</span>
+      <span class="chev"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROSE & MOONLIGHT REVEAL ============ -->
+<section id="rose-reveal">
+  <div class="moonlight-beam"></div>
+  <div class="moon-reflection"></div>
+  
+  <div class="reveal-inner">
+    <div class="glass-jar">
+      <svg id="hero-rose-svg" viewBox="0 0 200 260"></svg>
+    </div>
+    <h2>The Enchanted Rose</h2>
+    <p class="msg">Kept safely away from time, glowing only for you under the quiet moonlight.</p>
+  </div>
+</section>
+
+<!-- ============ PROGRESSIVE GAMES SECTION ============ -->
+<section id="games">
+  
+  <!-- Level 1 -->
+  <div class="game-level" id="level1">
+    <div class="game-card">
+      <div class="level-badge">LEVEL I</div>
+      <h3>Pluck the Petals</h3>
+      <p class="game-sub">Consult the enchanted rose.</p>
+      <div id="petalGameStage">
+        <svg id="petalFlower" viewBox="0 0 200 260"></svg>
+        <div class="petal-msg" id="petalMsg">Tap the flower</div>
+        <button class="btn-reset" id="petalReset">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level 2 -->
+  <div class="game-level" id="level2">
+    <div class="game-card">
+      <div class="level-badge">LEVEL II</div>
+      <h3>Memory Realm</h3>
+      <p class="game-sub">Find all 6 matching pairs to unlock the final trial.</p>
+      <div id="memoryGrid"></div>
+      <div id="memoryMeta">Moves: <span id="memMoves">0</span> &nbsp;&middot;&nbsp; Pairs: <span id="memPairs">0</span> / 6</div>
+    </div>
+  </div>
+
+  <!-- Level 3 -->
+  <div class="game-level" id="level3">
+    <div class="game-card">
+      <div class="level-badge">LEVEL III</div>
+      <h3>Catch the Falling Petals</h3>
+      <p class="game-sub">Catch 10 falling petals in 20 seconds.</p>
+      <div id="catchHud"><span>Caught: <span id="catchScore">0</span>/10</span><span id="catchTime">20s</span></div>
+      <div id="catchStage">
+        <div id="catchOverlay">
+          <button class="btn-main" id="catchStart">Start Challenge</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+
+
+<footer>
+  hope you like it  &bull; my hermionieeeee
+</footer>
+
+<script>
+/* ================= BUILD ENCHANTED ROSE ================= */
+function petalPath(rot, scale, fill, cx, cy, opacity){
+  return `<path transform="translate(${cx},${cy}) rotate(${rot}) scale(${scale})" `+
+         `d="M0,0 C-22,-14 -20,-46 0,-62 C20,-46 22,-14 0,0 Z" `+
+         `fill="${fill}" fill-opacity="${opacity!==undefined?opacity:0.95}" `+
+         `stroke="rgba(0,0,0,0.5)" stroke-width="1.2"/>`;
+}
+function buildRoseSVG({withStem=true, cx=100, cy=130}={}){
+  let s = '';
+  // Outer layer - deep crimson
+  for(let i=0;i<8;i++){ s += petalPath(i*45+8, 1.18, '#8b0000', cx, cy-4); }
+  // Mid layer - vivid red
+  for(let i=0;i<6;i++){ s += petalPath(i*60+25, 0.92, '#dc143c', cx, cy-9); }
+  // Inner layer - bright rose glow
+  for(let i=0;i<5;i++){ s += petalPath(i*72+10, 0.62, '#ff2a55', cx, cy-13); }
+  // Core bud
+  s += `<ellipse cx="${cx}" cy="${cy-16}" rx="12" ry="18" fill="#4a0512"/>`;
+  if(withStem){
+    s += `<path d="M${cx},${cy+16} C${cx-6},${cy+70} ${cx+10},${cy+110} ${cx-4},${cy+170}" stroke="#122114" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+    s += `<path d="M${cx-3},${cy+80} C${cx-30},${cy+85} ${cx-45},${cy+60} ${cx-50},${cy+45} C${cx-25},${cy+48} ${cx-6},${cy+62} ${cx-3},${cy+80} Z" fill="#1c331f"/>`;
+    s += `<path d="M${cx+2},${cy+120} C${cx+35},${cy+122} ${cx+48},${cy+98} ${cx+52},${cy+82} C${cx+28},${cy+86} ${cx+8},${cy+102} ${cx+2},${cy+120} Z" fill="#1c331f"/>`;
+    // Falling glowing petal (Beauty & beast iconic detail)
+    s += `<path transform="translate(${cx+25},${cy+150}) rotate(45) scale(0.4)" d="M0,0 C-22,-14 -20,-46 0,-62 C20,-46 22,-14 0,0 Z" fill="#dc143c" opacity="0.8"/>`;
+  }
+  return s;
+}
+
+document.getElementById('hero-rose-svg').innerHTML = buildRoseSVG({cx:100,cy:110});
+document.getElementById('petalFlower').innerHTML = buildRoseSVG({cx:100,cy:110});
+
+function loosePetalSVG(fill){
+  return `<svg viewBox="0 0 40 62"><path d="M20,0 C0,16 2,44 20,62 C38,44 40,16 20,0 Z" fill="${fill}"/></svg>`;
+}
+
+/* ================= DARK SMOKE GENERATOR ================= */
+const smokeContainer = document.getElementById('smoke-container');
+for(let i=0; i<12; i++){
+  const p = document.createElement('div');
+  p.className = 'smoke-particle';
+  const size = 100 + Math.random()*150;
+  p.style.width = size + 'px';
+  p.style.height = size + 'px';
+  p.style.left = (20 + Math.random()*60) + '%';
+  p.style.top = (20 + Math.random()*60) + '%';
+  smokeContainer.appendChild(p);
+}
+
+/* ================= DOOR & TUNNEL SCROLL ================= */
+const entryTrack = document.getElementById('entry-track');
+const leafLeft   = document.getElementById('leafLeft');
+const leafRight  = document.getElementById('leafRight');
+const doorGlow   = document.getElementById('doorGlow');
+const stoneArch  = document.getElementById('stoneArch');
+const tunnel     = document.getElementById('tunnel');
+const scrollCue  = document.getElementById('scrollCue');
+
+const rings = [];
+for(let i=0; i<8; i++){
+  const r = document.createElement('div');
+  r.className = 'ring';
+  const size = 80 + i*50;
+  r.style.width = size+'px';
+  r.style.height = (size*1.35)+'px';
+  tunnel.appendChild(r);
+  rings.push(r);
+}
+
+let ticking = false;
+function updateEntry(){
+  ticking = false;
+  const rect = entryTrack.getBoundingClientRect();
+  const total = entryTrack.offsetHeight - window.innerHeight;
+  let raw = -rect.top / total;
+  raw = Math.max(0, Math.min(1, raw));
+
+  const doorPhase   = Math.max(0, Math.min(1, raw/0.45));
+  const tunnelPhase = Math.max(0, Math.min(1, (raw-0.4)/0.6));
+
+  // Door swing
+  const angle = doorPhase * 110;
+  leafLeft.style.transform  = `rotateY(${angle}deg)`;
+  leafRight.style.transform = `rotateY(${-angle}deg)`;
+
+  // Dark Crimson Glow
+  doorGlow.style.background = `radial-gradient(circle at center, rgba(139,0,0,${doorPhase*0.8}) 0%, rgba(0,0,0,0) ${30+doorPhase*120}%)`;
+
+  // Dark Smoke appearance
+  smokeContainer.style.opacity = Math.sin(doorPhase * Math.PI);
+  Array.from(smokeContainer.children).forEach((p, idx) => {
+    const shift = (doorPhase * 80) * (idx%2 === 0 ? 1 : -1);
+    p.style.transform = `translate(${shift}px, ${-doorPhase*100}px) scale(${1 + doorPhase})`;
+  });
+
+  scrollCue.style.opacity = 1 - Math.min(1, raw/0.2);
+
+  const archFade = 1 - Math.max(0, Math.min(1, (raw-0.35)/0.2));
+  stoneArch.style.opacity = archFade;
+
+  tunnel.style.opacity = tunnelPhase > 0 ? Math.min(1, tunnelPhase*3) : 0;
+  rings.forEach((ring, i) => {
+    const depth = 1 - ((tunnelPhase*1.5 + i*0.18) % 1.5);
+    const z = depth*800 - 250;
+    const scale = Math.max(0.05, 1 - depth*0.5);
+    ring.style.transform = `translate(-50%,-50%) translateZ(${z}px) scale(${scale})`;
+    ring.style.left = '50%'; ring.style.top = '50%';
+    ring.style.opacity = Math.max(0, Math.min(1, depth*1.2));
+  });
+}
+
+document.addEventListener('scroll', ()=>{
+  if(!ticking){ requestAnimationFrame(updateEntry); ticking = true; }
+}, {passive:true});
+updateEntry();
+
+/* ================= TRAIT REVEAL ================= */
+const traitObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, {threshold: 0.2});
+
+document.querySelectorAll('.trait-row').forEach(el => {
+  const svg = `<svg viewBox="0 0 60 60"><path d="M30,6 C12,20 12,40 30,54 C48,40 48,20 30,6 Z" fill="none" stroke="#a37c27" stroke-width="2"/></svg>`;
+  el.querySelector('.arch-badge').innerHTML = svg;
+  traitObserver.observe(el);
+});
+
+/* ================= PROGRESSIVE GAME UNLOCKING ================= */
+const startGamesBtn = document.getElementById('startGamesBtn');
+const level1 = document.getElementById('level1');
+const level2 = document.getElementById('level2');
+const level3 = document.getElementById('level3');
+const finale = document.getElementById('finale');
+
+startGamesBtn.addEventListener('click', () => {
+  level1.classList.add('unlocked');
+  level1.scrollIntoView({ behavior: 'smooth' });
+  startGamesBtn.style.display = 'none';
+});
+
+/* Level 1 Game Logic */
+const TOTAL_PETALS = 7;
+let plucked = 0;
+const petalMsg = document.getElementById('petalMsg');
+const petalFlowerSvg = document.getElementById('petalFlower');
+
+petalFlowerSvg.addEventListener('click', () => {
+  if(plucked >= TOTAL_PETALS) return;
+  plucked++;
+  petalMsg.textContent = (plucked % 2 === 1) ? 'Loves me' : 'Loves me not';
+  petalFlowerSvg.style.transform = `scale(${1 - plucked*0.05})`;
+
+  if(plucked === TOTAL_PETALS){
+    petalMsg.textContent = 'Loves me... Forever.';
+    setTimeout(() => {
+      level2.classList.add('unlocked');
+      level2.scrollIntoView({ behavior: 'smooth' });
+    }, 1200);
+  }
+});
+
+document.getElementById('petalReset').addEventListener('click', () => {
+  plucked = 0;
+  petalMsg.textContent = 'Tap the flower';
+  petalFlowerSvg.style.transform = 'scale(1)';
+});
+
+/* Level 2 Game Logic (Memory) */
+const memIcons = [
+  `<path d="M12,30 C0,10 15,-5 30,10 C45,-5 60,10 48,30 C40,40 30,52 30,52 Z" fill="#dc143c"/>`,
+  buildRoseSVG({withStem:false, cx:30, cy:30}),
+  `<path d="M30,2 L36,22 L58,22 L40,35 L47,56 L30,43 L13,56 L20,35 L2,22 L24,22 Z" fill="#a37c27"/>`,
+  `<circle cx="30" cy="30" r="18" fill="none" stroke="#8b0000" stroke-width="3"/>`,
+  `<path d="M10,20 Q30,0 50,20 Q30,40 10,20 Z" fill="#1c331f"/>`,
+  `<ellipse cx="30" cy="30" rx="15" ry="22" fill="#ff2a55"/>`
+];
+
+let deck = [...memIcons, ...memIcons].sort(() => Math.random() - 0.5);
+const memGrid = document.getElementById('memoryGrid');
+let flippedCards = [], lockBoard = false, moves = 0, pairsFound = 0;
+
+deck.forEach((icon) => {
+  const el = document.createElement('div');
+  el.className = 'mem-card';
+  el.innerHTML = `<div class="mc-inner"><div class="mc-face mc-back"></div><div class="mc-face mc-front"><svg viewBox="0 0 60 60">${icon}</svg></div></div>`;
+  el._iconVal = icon;
+  el.addEventListener('click', () => flipCard(el));
+  memGrid.appendChild(el);
+});
+
+function flipCard(el){
+  if(lockBoard || el.classList.contains('flipped') || el.classList.contains('matched')) return;
+  el.classList.add('flipped');
+  flippedCards.push(el);
+
+  if(flippedCards.length === 2){
+    moves++; document.getElementById('memMoves').textContent = moves;
+    lockBoard = true;
+    const [a,b] = flippedCards;
+    if(a._iconVal === b._iconVal){
+      a.classList.add('matched'); b.classList.add('matched');
+      pairsFound++; document.getElementById('memPairs').textContent = pairsFound;
+      flippedCards = []; lockBoard = false;
+
+      if(pairsFound === 6){
+        setTimeout(() => {
+          level3.classList.add('unlocked');
+          level3.scrollIntoView({ behavior: 'smooth' });
+        }, 1000);
+      }
+    } else {
+      setTimeout(() => {
+        a.classList.remove('flipped'); b.classList.remove('flipped');
+        flippedCards = []; lockBoard = false;
+      }, 700);
+    }
+  }
+}
+
+/* Level 3 Game Logic (Catch Petals) */
+const catchStage = document.getElementById('catchStage');
+const catchOverlay = document.getElementById('catchOverlay');
+const catchScoreEl = document.getElementById('catchScore');
+const catchTimeEl = document.getElementById('catchTime');
+let catchScore = 0, catchTimer = 20, catchInterval = null, spawnInterval = null;
+
+document.getElementById('catchStart').addEventListener('click', () => {
+  catchScore = 0; catchTimer = 20;
+  catchScoreEl.textContent = 0; catchTimeEl.textContent = '20s';
+  catchOverlay.style.display = 'none';
+
+  spawnInterval = setInterval(spawnFallingPetal, 450);
+  catchInterval = setInterval(() => {
+    catchTimer--;
+    catchTimeEl.textContent = catchTimer + 's';
+    if(catchTimer <= 0) {
+      clearInterval(spawnInterval);
+      clearInterval(catchInterval);
+      if(catchScore >= 10){
+        catchOverlay.innerHTML = '<p style="color:var(--gold-light)">Challenge Passed!</p>';
+        catchOverlay.style.display = 'flex';
+        setTimeout(() => {
+          finale.classList.add('unlocked');
+          finale.scrollIntoView({ behavior: 'smooth' });
+        }, 1200);
+      } else {
+        catchOverlay.innerHTML = '<p style="color:#b39b9f">Try Again</p><button class="btn-main" id="retryBtn">Retry</button>';
+        catchOverlay.style.display = 'flex';
+        document.getElementById('retryBtn').addEventListener('click', () => {
+          catchOverlay.innerHTML = '<button class="btn-main" id="catchStart">Start Challenge</button>';
+          document.getElementById('catchStart').click();
+        });
+      }
+    }
+  }, 1000);
+});
+
+function spawnFallingPetal(){
+  const p = document.createElement('div');
+  p.className = 'fall-petal';
+  p.innerHTML = loosePetalSVG('#dc143c');
+  p.style.left = (Math.random()*(catchStage.clientWidth - 30)) + 'px';
+  p.style.transition = 'transform 2.2s linear, opacity 0.2s';
+  catchStage.appendChild(p);
+
+  requestAnimationFrame(() => {
+    p.style.transform = `translateY(${catchStage.clientHeight + 40}px) rotate(180deg)`;
+  });
+
+  p.addEventListener('click', () => {
+    catchScore++;
+    catchScoreEl.textContent = catchScore;
+    p.style.opacity = '0';
+    setTimeout(() => p.remove(), 200);
+  });
+
+  setTimeout(() => { if(p.parentNode) p.remove(); }, 2300);
+}
+</script>
+</body>
+</html>
